@@ -23,7 +23,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.util.Optional;
+import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
@@ -34,7 +37,6 @@ import org.junit.runner.manipulation.Sorter;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.internal.AndroidSandbox;
-import org.spockframework.runtime.Sputnik;
 import org.spockframework.runtime.model.SpecInfo;
 import spock.lang.Specification;
 import spock.lang.Title;
@@ -55,10 +57,11 @@ public class ElectricSputnik extends Runner implements Filterable, Sortable {
   /* the real test runner to run test classes. It is enclosed by ElectricSputnik so that it is
   run within Robolectric interception
    */
-  private final Runner sputnik;
+  private final Runner junitPlatformRunner;
 
   static {
-    new SecureRandom(); // this starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric classloader
+    // this starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric classloader
+    new SecureRandom(String.valueOf(System.currentTimeMillis()).getBytes(StandardCharsets.UTF_8));
   }
 
   public ElectricSputnik(Class<? extends Specification> specClass) throws InitializationError {
@@ -74,7 +77,7 @@ public class ElectricSputnik extends Runner implements Filterable, Sortable {
     specInfoClass = sdkEnvironment.bootstrappedClass(SpecInfo.class);
 
     // Since we have bootstrappedClass we may properly initialize
-    sputnik = createSputnik(specClass);
+    junitPlatformRunner = createSputnik(specClass);
 
     registerSpec();
 
@@ -90,7 +93,7 @@ public class ElectricSputnik extends Runner implements Filterable, Sortable {
   private Runner createSputnik(Class<? extends Specification> specClass) {
     try {
       return (Runner) sdkEnvironment
-        .bootstrappedClass(Sputnik.class)
+        .bootstrappedClass(JUnitPlatform.class)
         .getConstructor(Class.class)
         .newInstance(sdkEnvironment.bootstrappedClass(specClass));
     }
@@ -105,7 +108,7 @@ public class ElectricSputnik extends Runner implements Filterable, Sortable {
   private void registerSpec() {
     Constructor<?> interceptorConstructor = getInterceptorConstructor();
 
-    for (Method method : sputnik.getClass().getDeclaredMethods()) {
+    for (Method method : junitPlatformRunner.getClass().getDeclaredMethods()) {
       Object specInfo = getSpec(method);
 
       if (specInfo != null) {
@@ -132,10 +135,11 @@ public class ElectricSputnik extends Runner implements Filterable, Sortable {
       method.setAccessible(true);
 
       try {
-        Object specInfo = method.invoke(sputnik);
+        Object specInfo = method.invoke(junitPlatformRunner);
         if (specInfo.getClass() != specInfoClass) {
-          throw new RuntimeException("Failed to obtain SpecInfo instance from getSpec method. Instance of '"
-                                       + specInfo.getClass().getName() + "' is obtained");
+          throw new RuntimeException(String.format(
+            "Failed to obtain SpecInfo instance from getSpec method. Instance of '%s' is obtained",
+            specInfo.getClass().getName()));
         }
         return specInfo;
       }
@@ -152,63 +156,58 @@ public class ElectricSputnik extends Runner implements Filterable, Sortable {
    * Get a sandboxed constructor of interceptor
    */
   private Constructor<?> getInterceptorConstructor() {
-
     try {
       return sdkEnvironment
         .bootstrappedClass(ElectricSpockInterceptor.class)
-        .getConstructor(
-          specInfoClass,
-          ContainedRobolectricTestRunner.class
-        );
+        .getConstructor(specInfoClass, ContainedRobolectricTestRunner.class);
     }
     catch (NoSuchMethodException e) {
       // it should not happen in production code as the class
       // ElectricSpockInterceptor is known
       throw new RuntimeException(e);
     }
+  }
 
+  private Optional<String> title(Class<?> testClass) {
+    for (Annotation annotation : testClass.getAnnotations()) {
+
+      if (annotation instanceof Title) {
+        return Optional.ofNullable(((Title) annotation).value());
+      }
+    }
+
+    return Optional.empty();
   }
 
   @Override
   public Description getDescription() {
-
-    Description originalDesc = sputnik.getDescription();
+    Description originalDesc = junitPlatformRunner.getDescription();
     Class<?> testClass = originalDesc.getTestClass();
 
     if (testClass == null) {
       throw new RuntimeException("Unexpected null testClass");
     }
 
-    String title = null;
-
-    Annotation[] annotations = testClass.getAnnotations();
-    for (Annotation a : annotations) {
-      if (a instanceof Title) {
-        title = ((Title) a).value();
-        break;
-      }
-    }
-
-    Description overridedDesc = Description.createSuiteDescription(title == null ? testClass.getName() : title);
+    Description description = Description.createSuiteDescription(title(testClass).orElse(testClass.getName()));
     for (Description d : originalDesc.getChildren()) {
-      overridedDesc.addChild(d);
+      description.addChild(d);
     }
 
-    return overridedDesc;
+    return description;
   }
 
   @Override
   public void run(RunNotifier notifier) {
-    sputnik.run(notifier);
+    junitPlatformRunner.run(notifier);
   }
 
   @Override
   public void filter(Filter filter) throws NoTestsRemainException {
-    ((Filterable) sputnik).filter(filter);
+    ((Filterable) junitPlatformRunner).filter(filter);
   }
 
   @Override
   public void sort(Sorter sorter) {
-    ((Sortable) sputnik).sort(sorter);
+    ((Sortable) junitPlatformRunner).sort(sorter);
   }
 }

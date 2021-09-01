@@ -28,6 +28,7 @@ class RobolectricVersionCheckerSpec extends ElectricSpecification {
   def "Unknown Robolectric version"() {
     given:
     def checker = new RobolectricVersionChecker("non-existence-file.properties")
+
     expect:
     checker.currentRobolectricVersion == "Unknown"
   }
@@ -35,6 +36,7 @@ class RobolectricVersionCheckerSpec extends ElectricSpecification {
   def "detect Robolectric version"() {
     given:
     def checker = new RobolectricVersionChecker("test-robolectric.properties")
+
     expect:
     checker.currentRobolectricVersion == "test-version"
   }
@@ -63,6 +65,7 @@ class RobolectricVersionCheckerSpec extends ElectricSpecification {
     given:
     def checker = new RobolectricVersionChecker("test-robolectric.properties")
     checker.acceptedVersions = ["3.3", "3.4"] as String[]
+
     expect:
     !checker.isVersion("3.2", checker.acceptedVersions)
     checker.isVersion("3.3", checker.acceptedVersions)
@@ -82,7 +85,7 @@ class RobolectricVersionCheckerSpec extends ElectricSpecification {
 
     then:
     def ex = thrown(RuntimeException)
-    ex.message.startsWith "This version of ElectricSpock supports Robolectric 4.0.x to 4.4.x only. Version ${ver} is detected." as String
+    ex.message.startsWith "This version of ElectricSpock supports Robolectric 4.0.x to 4.6.x only. Version ${ver} is detected." as String
 
     where:
     ver   || _

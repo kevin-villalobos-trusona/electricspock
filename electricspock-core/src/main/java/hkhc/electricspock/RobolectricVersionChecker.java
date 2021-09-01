@@ -29,7 +29,7 @@ public class RobolectricVersionChecker {
   private String versionKey = "robolectric.version";
 
   // *** update this for version upgrade
-  private String[] acceptedVersions = new String[]{"4,0", "4.1", "4.2", "4.3", "4.4"};
+  private String[] acceptedVersions = new String[]{"4,0", "4.1", "4.2", "4.3", "4.4", "4.6"};
 
   public RobolectricVersionChecker() {
   }
