@@ -34,8 +34,8 @@ artifactory {
     contextUrl = "https://thitu.jfrog.io/artifactory"
     repository {
       repoKey = "releases"
-      username = "JFROG_USERNAME"
-      password = "JFROG_PASSWORD"
+      username = JFROG_USERNAME
+      password = JFROG_PASSWORD
     }
     defaults {
       publications("mavenJava")
