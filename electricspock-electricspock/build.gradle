@@ -37,15 +37,15 @@ dependencies {
   testRuntimeOnly files("build/classes/groovy/test")
   testRuntimeOnly files("build/classes/groovy/main")
 
-  implementation "org.codehaus.groovy:groovy-all:2.5.14"
-  implementation "org.spockframework:spock-core:2.0-groovy-2.5"
+  api "org.codehaus.groovy:groovy-all:2.5.14"
+  api "org.spockframework:spock-core:2.0-groovy-2.5"
 
-  implementation "cglib:cglib-nodep:3.3.0"
-  implementation "org.jetbrains:annotations-java5:22.0.0"
+  api "cglib:cglib-nodep:3.3.0"
+  api "org.jetbrains:annotations-java5:22.0.0"
 
-  implementation "org.junit.platform:junit-platform-runner:1.7.2"
+  api "org.junit.platform:junit-platform-runner:1.7.2"
 
-  implementation project(":electricspock-core")
+  api project(":electricspock-core")
 }
 
 // last
