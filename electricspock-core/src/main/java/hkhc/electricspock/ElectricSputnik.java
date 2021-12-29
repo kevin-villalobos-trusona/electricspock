@@ -92,10 +92,14 @@ public class ElectricSputnik extends Runner implements Filterable, Sortable {
    */
   private Runner createSputnik(Class<? extends Specification> specClass) {
     try {
+      return new JUnitPlatform(sdkEnvironment.bootstrappedClass(specClass));
+
+      /*
       return (Runner) sdkEnvironment
         .bootstrappedClass(JUnitPlatform.class)
         .getConstructor(Class.class)
         .newInstance(sdkEnvironment.bootstrappedClass(specClass));
+        */
     }
     catch (Exception e) {
       throw new RuntimeException(e);
