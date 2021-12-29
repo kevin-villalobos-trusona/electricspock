@@ -37,14 +37,6 @@ dependencies {
   testRuntimeOnly files("build/classes/groovy/test")
   testRuntimeOnly files("build/classes/groovy/main")
 
-  api "org.codehaus.groovy:groovy-all:2.5.14"
-  api "org.spockframework:spock-core:2.0-groovy-2.5"
-
-  api "cglib:cglib-nodep:3.3.0"
-  api "org.jetbrains:annotations-java5:22.0.0"
-
-  api "org.junit.platform:junit-platform-runner:1.7.2"
-
   api project(":electricspock-core")
 }
 
