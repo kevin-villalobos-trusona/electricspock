@@ -5,10 +5,11 @@ on:
     branches: [ release ]
 
 jobs:
-  public:
+  publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v3
       - name: Set up Java
