@@ -6,11 +6,11 @@ on:
 
 jobs:
   tests:
-    - uses: gradle/gradle-build-action@v2
-      with:
-        arguments: clean test
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    uses: gradle/gradle-build-action@v2
+    with:
+      arguments: clean test
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
 
