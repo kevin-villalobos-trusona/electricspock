@@ -1,6 +1,5 @@
 apply plugin: "java-library"
 apply plugin: "maven-publish"
-apply plugin: "com.jfrog.artifactory"
 
 task sourcesJar(type: Jar) {
   from sourceSets.main.allJava
@@ -29,18 +28,20 @@ publishing {
   }
 }
 
-artifactory {
-  publish {
-    contextUrl = "https://thitu.jfrog.io/artifactory"
-    repository {
-      repoKey = "releases"
-      username = JFROG_USERNAME
-      password = JFROG_PASSWORD
+publishing {
+  repositories {
+    maven {
+      name = "GitHubPackages"
+      url = uri("https://maven.pkg.github.com/kevin-villalobos-trusona/electricspock")
+      credentials {
+        username = System.getenv("GITHUB_ACTOR")
+        password = System.getenv("GITHUB_TOKEN")
+      }
     }
-    defaults {
-      publications("mavenJava")
-      publishArtifacts = true
-      publishPom = true
+  }
+  publications {
+    gpr(MavenPublication) {
+      from(components.java)
     }
   }
 }

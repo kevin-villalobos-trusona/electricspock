@@ -1,0 +1,16 @@
+name: ElectricSpock Tests
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  tests:
+    - uses: gradle/gradle-build-action@v2
+      with:
+        arguments: clean test
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+
