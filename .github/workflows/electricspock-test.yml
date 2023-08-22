@@ -6,11 +6,16 @@ on:
 
 jobs:
   tests:
-    uses: gradle/gradle-build-action@v2
-    with:
-      arguments: clean test
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
-
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+      - uses: gradle/gradle-build-action@v2
+        with:
+          arguments: clean test
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
